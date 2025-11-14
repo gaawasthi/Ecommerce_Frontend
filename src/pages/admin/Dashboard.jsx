@@ -57,14 +57,14 @@ const Dashboard = () => {
 
   return (
     <AdminLayout>
-      {/* Stats Cards */}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {stats.map((stat) => (
           <Card key={stat.title} title={stat.title} value={stat.value} />
         ))}
       </div>
 
-      {/* Top Sellers & Products */}
+  
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <h2 className="text-lg font-bold mb-2">Top Sellers</h2>
@@ -96,7 +96,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Top Customers */}
       <div>
         <h2 className="text-lg font-bold mb-2">Top Customers</h2>
         <ul className="bg-white p-4 rounded shadow space-y-2">

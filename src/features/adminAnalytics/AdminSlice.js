@@ -2,7 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 const getErrorMessage = (error) => {
-  return error?.response?.data?.message || error?.message || 'something went wrong';
+  return (
+    error?.response?.data?.message || error?.message || 'something went wrong'
+  );
 };
 
 export const getTotalRevenue = createAsyncThunk(
@@ -65,11 +67,51 @@ export const topSellers = createAsyncThunk(
   }
 );
 
+// GET /api/users – get all users (admin only)
+export const allUsers = createAsyncThunk(
+  'admin/users',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios.get('/api/users');
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+// GET /api/users/:id – get a single user (admin only)
+export const singleUser = createAsyncThunk(
+  'admin/singleUser',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/users/${id}`);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+// DELETE /api/users/:id – delete a user (admin only)
+export const deleteUser = createAsyncThunk(
+  'admin/deleteUser',
+  async (id, { rejectWithValue }) => {
+    try {
+      const res = await axios.delete(`/api/users/${id}`);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 const adminSlice = createSlice({
   name: 'admin',
   initialState: {
     revenue: 0,
     weekData: {},
+    users: [],
+    user: null,
     customersData: [],
     productsData: [],
     sellersData: [],
@@ -90,8 +132,8 @@ const adminSlice = createSlice({
       .addCase(getTotalRevenue.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      })
-    builder  
+      });
+    builder
       .addCase(lastWeek.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -103,8 +145,8 @@ const adminSlice = createSlice({
       .addCase(lastWeek.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      })
-     builder  
+      });
+    builder
       .addCase(topCustomers.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -116,8 +158,8 @@ const adminSlice = createSlice({
       .addCase(topCustomers.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      })
-      builder  
+      });
+    builder
       .addCase(topProducts.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -129,8 +171,8 @@ const adminSlice = createSlice({
       .addCase(topProducts.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      })
-      builder
+      });
+    builder
       .addCase(topSellers.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -140,6 +182,44 @@ const adminSlice = createSlice({
         state.sellersData = action.payload;
       })
       .addCase(topSellers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(allUsers.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(allUsers.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.users = action.payload.users;
+      })
+      .addCase(allUsers.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(singleUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(singleUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(singleUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.sellersData = action.payload;
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       });
