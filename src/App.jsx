@@ -22,6 +22,9 @@ import ProductDetail from './pages/customers/ProductDetail';
 import Cart from './pages/customers/Cart';
 import Checkout from './pages/customers/Checkout';
 import OrderSummary from './pages/customers/OrderSummary';
+import OrderList from './pages/customers/OrderList';
+import CustomerProfile from './pages/customers/Profile';
+import SearchedProducts from './pages/customers/SearchedProducts';
 
 const App = () => {
   return (
@@ -57,6 +60,9 @@ const App = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order/summary" element={<OrderSummary />} />
+             <Route path="/orders" element={<OrderList />} />
+             <Route path="/userprofile" element={<CustomerProfile/>}/>
+             <Route path="/search" element={<SearchedProducts/>}/>
           </Route>
         </Routes>
       </BrowserRouter>

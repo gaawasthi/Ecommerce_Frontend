@@ -18,6 +18,18 @@ export const getAllProducts = createAsyncThunk(
     }
   }
 );
+export const searched = createAsyncThunk(
+  'products/searched',
+  async (query, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`/api/products/search?query=${query}`);
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
 
 export const getFashionProducts = createAsyncThunk(
   'products/getFashionProducts',
@@ -137,6 +149,7 @@ export const deleteProduct = createAsyncThunk(
 
 const initialState = {
   products: [],
+  searchedProducts  : [],
   electronics:[] , 
   fashion : [] , 
   sports:[],
@@ -170,6 +183,19 @@ const productSlice = createSlice({
         state.totalProduct = action.payload.totalProduct;
       })
       .addCase(getAllProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(searched.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(searched.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.searchedProducts = action.payload.products;
+
+      })
+      .addCase(searched.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })

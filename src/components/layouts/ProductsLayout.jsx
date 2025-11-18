@@ -2,11 +2,14 @@ import React from 'react';
 import Sidebar from '../Sidebar';
 import ProductSIdebar from '../ProductSIdebar';
 
-const ProductLayout = ({ children }) => {
+
+
+
+const ProductLayout = ({ children, applyFilters }) => {
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <ProductSIdebar />
-      <main className="flex-1 p-6">{children}</main>
+    <div className="flex gap-6">
+      <ProductSIdebar applyFilters={applyFilters} />
+      <div className="flex-1">{children}</div>
     </div>
   );
 };

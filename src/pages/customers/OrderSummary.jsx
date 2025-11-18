@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 
 const OrderSummary = () => {
   const lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
+  const navigate = useNavigate();
+
   console.log(lastOrder);
-  const navigate = useNavigate()
-  
-  // If lastOrder is missing (refresh / direct access)
+
+  // If order missing (refresh/direct access)
   if (!lastOrder) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -53,7 +54,7 @@ const OrderSummary = () => {
             <div>
               <p className="text-slate-500 text-sm font-medium">Total</p>
               <p className="text-sm font-medium text-indigo-700 mt-2">
-                ${lastOrder?.totalAmount || 0}
+                ₹{lastOrder?.totalPrice || 0}
               </p>
             </div>
           </div>
@@ -92,24 +93,27 @@ const OrderSummary = () => {
           </div>
 
           {/* Order Items */}
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <h3 className="text-base font-medium text-slate-900 mb-6">
               Order Items ({lastOrder?.items?.length || 0})
             </h3>
 
             <div className="space-y-4">
-              {lastOrder?.items?.map((item) => (
-                <div key={item._id} className="flex items-start gap-4 max-sm:flex-col">
+              {lastOrder?.items?.map((item, index) => (
+                <div
+                  key={item?.product?._id || index}
+                  className="flex items-start gap-4 max-sm:flex-col"
+                >
 
                   <img
-                    src={item?.product?.images?.[0].url || "/placeholder.png"}
-                    alt="Item"
+                    src={item?.product?.images?.[0]?.url || "/placeholder.png"}
+                    alt={item?.product?.name || "Product"}
                     className="w-20 h-20 object-cover rounded-lg border"
                   />
 
                   <div className="flex-1">
                     <h4 className="text-sm font-medium text-slate-900">
-                      {item?.product?.name || "Product Title"}
+                      {item?.product?.name}
                     </h4>
 
                     <p className="text-slate-500 text-xs font-medium mt-2">
@@ -117,7 +121,6 @@ const OrderSummary = () => {
                     </p>
                   </div>
 
-             
                   <div className="text-right">
                     <p className="text-slate-900 text-sm font-semibold">
                       ₹{item?.product?.price}
@@ -127,10 +130,10 @@ const OrderSummary = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
-    
-          <div className="bg-gray-1      {/* Price Summary */}00 rounded-xl p-4 mt-8">
+          {/* Price Summary */}
+          <div className="bg-gray-100 rounded-xl p-4 mt-8">
             <h3 className="text-base font-medium text-slate-900 mb-6">Order Summary</h3>
 
             <div className="space-y-4">
@@ -157,20 +160,23 @@ const OrderSummary = () => {
 
         </div>
 
-      
+        {/* Footer */}
         <div className="bg-gray-100 px-6 py-4">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-500 text-sm font-medium">
               Need help?{" "}
-              <a href="#" className="text-indigo      {/* Price Summary */}-700 hover:underline">
+              <a href="#" className="text-indigo-700 hover:underline">
                 Contact us
               </a>
             </p>
 
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-[15px] py-2 px-4 rounded-lg cursor-pointer transition duration-200"  onClick={()=>navigate('/')} >
-             Go to home
+            <button
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-[15px] py-2 px-4 rounded-lg cursor-pointer transition duration-200"
+              onClick={() => navigate('/')}
+            >
+              Go to home
             </button>
-            
+
           </div>
         </div>
 

@@ -41,7 +41,7 @@ export const getOrderById = createAsyncThunk(
   'order/getOrderById',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/order/user/single/${id}`);
+      const { data } = await axios.get(`/api/orders/single/${id}`);
       return data.order;
     } catch (error) {
       return rejectWithValue(error?.response?.data?.message || 'Error');
@@ -53,7 +53,7 @@ export const cancelOrder = createAsyncThunk(
   'order/cancelOrder',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.put(`/api/order/user/cancel/${id}`);
+      const { data } = await axios.get(`/api/order/orders/cancel/${id}`);
       return data.updatedOrder;
     } catch (error) {
       return rejectWithValue(error?.response?.data?.message || 'Error');
