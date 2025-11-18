@@ -7,9 +7,51 @@ const getErrorMessage = (error) =>
 
 export const getAllProducts = createAsyncThunk(
   'products/getAllProducts',
-  async (_, { rejectWithValue }) => {
+  async (filters = {}, { rejectWithValue }) => {
     try {
-      const res = await axios.get('/api/products');
+      const res = await axios.get('/api/products', {
+        params: filters,   
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+
+export const getFashionProducts = createAsyncThunk(
+  'products/getFashionProducts',
+  async (filters = {}, { rejectWithValue }) => {
+    try {
+      const res = await axios.get('/api/products', {
+        params: filters,   
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+export const getElectronicsProducts = createAsyncThunk(
+  'products/getElectronicsProducts',
+  async (filters = {}, { rejectWithValue }) => {
+    try {
+      const res = await axios.get('/api/products', {
+        params: filters,   
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(getErrorMessage(error));
+    }
+  }
+);
+export const getSports = createAsyncThunk(
+  'products/getSports',
+  async (filters = {}, { rejectWithValue }) => {
+    try {
+      const res = await axios.get('/api/products', {
+        params: filters,   
+      });
       return res.data;
     } catch (error) {
       return rejectWithValue(getErrorMessage(error));
@@ -95,6 +137,9 @@ export const deleteProduct = createAsyncThunk(
 
 const initialState = {
   products: [],
+  electronics:[] , 
+  fashion : [] , 
+  sports:[],
   product: null,
   isLoading: false,
   error: null,
@@ -128,7 +173,53 @@ const productSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
+      .addCase(getElectronicsProducts.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getElectronicsProducts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.electronics = action.payload.products;
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
+        state.totalProduct = action.payload.totalProduct;
+      })
+      .addCase(getElectronicsProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+   
+      .addCase(getFashionProducts.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getFashionProducts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.fashion = action.payload.products;
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
+        state.totalProduct = action.payload.totalProduct;
+      })
+      .addCase(getFashionProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+   
+      .addCase(getSports.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getSports.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.sports = action.payload.products;
+        state.page = action.payload.page;
+        state.totalPages = action.payload.totalPages;
+        state.totalProduct = action.payload.totalProduct;
+      })
+      .addCase(getSports.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
    
       .addCase(getMyProducts.pending, (state) => {
         state.isLoading = true;
@@ -150,7 +241,7 @@ const productSlice = createSlice({
       })
       .addCase(getSingleProduct.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.product = action.payload;
+        state.product = action.payload.product;
       })
       .addCase(getSingleProduct.rejected, (state, action) => {
         state.isLoading = false;

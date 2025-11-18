@@ -14,7 +14,7 @@ const Sidebar = () => {
   const links = [
     {
       name: 'Dashboard',
-      path: '/admin',
+      path: '/admin/dashboard',
       icon: <HomeIcon className="w-6 h-6" />,
     },
     {

@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import Table from '../../components/Table';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllOrders } from '../../features/orders/orderSlice';
+import { getAdminOrders } from '../../features/orders/orderSlice';
 
 const Orders = () => {
   const dispatch = useDispatch();
   const { allOrders, isLoading } = useSelector((state) => state.order);
 
   useEffect(() => {
-    dispatch(getAllOrders());
+    dispatch(getAdminOrders());
   }, [dispatch]);
 
   return (

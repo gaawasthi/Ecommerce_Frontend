@@ -14,7 +14,7 @@ const SellerSidebar = () => {
   const links = [
     {
       name: 'Dashboard',
-      path: '/seller',
+      path: '/seller/dashboard',
       icon: <HomeIcon className="w-6 h-6" />,
     },
     {

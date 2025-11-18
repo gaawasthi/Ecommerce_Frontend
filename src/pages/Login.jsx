@@ -11,15 +11,18 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { user, isLoading, isError, message } = useSelector((state) => state.auth);
+  const { user, isLoading, isError, message } = useSelector(
+    (state) => state.auth
+  );
 
   useEffect(() => {
     if (user?.role) {
       const redirectPaths = {
-        admin: "/admin",
+        admin: "/admin/dashboard",
         seller: "/seller/dashboard",
-        customer: "/home",
+        customer: "/",
       };
+
       navigate(redirectPaths[user.role] || "/");
     }
   }, [user, navigate]);
@@ -28,27 +31,18 @@ const Login = () => {
     initialValues: { email: "", password: "" },
     validationSchema: Yup.object({
       email: Yup.string().email("Invalid email").required("Required"),
-      password: Yup.string().min(6, "Minimum 6 characters").required("Required"),
+      password: Yup.string()
+        .min(6, "Minimum 6 characters")
+        .required("Required"),
     }),
     onSubmit: async (values) => {
-      const result = await dispatch(login(values));
-
-      if (result.meta.requestStatus === "fulfilled") {
-        const userRole = result.payload.user.role;
-        const redirectPaths = {
-          admin: "/admin",
-          seller: "/seller/dashboard",
-          customer: "/home",
-        };
-        navigate(redirectPaths[userRole] || "/");
-      }
+      dispatch(login(values));
     },
   });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-md space-y-6">
-        
         
         <div className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 flex items-center justify-center bg-blue-600 text-white rounded-full">
@@ -59,19 +53,21 @@ const Login = () => {
         </div>
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
-
-         
+          
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">Email</label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-
               <input
                 type="email"
                 name="email"
                 {...formik.getFieldProps("email")}
                 className={`w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none 
-                ${formik.touched.email && formik.errors.email ? "border-red-500" : "border-gray-300"}`}
+                ${
+                  formik.touched.email && formik.errors.email
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
                 placeholder="you@example.com"
               />
             </div>
@@ -83,7 +79,9 @@ const Login = () => {
 
           
           <div className="space-y-1">
-            <label className="text-sm font-medium text-gray-700">Password</label>
+            <label className="text-sm font-medium text-gray-700">
+              Password
+            </label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
 
@@ -92,7 +90,11 @@ const Login = () => {
                 name="password"
                 {...formik.getFieldProps("password")}
                 className={`w-full pl-10 pr-10 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none 
-                ${formik.touched.password && formik.errors.password ? "border-red-500" : "border-gray-300"}`}
+                ${
+                  formik.touched.password && formik.errors.password
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
                 placeholder="********"
               />
 
@@ -110,11 +112,12 @@ const Login = () => {
             )}
           </div>
 
+          
           <p className="text-sm">
             New Customer?{" "}
             <button
               type="button"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/register")}
               className="text-blue-600 font-medium"
             >
               Click here

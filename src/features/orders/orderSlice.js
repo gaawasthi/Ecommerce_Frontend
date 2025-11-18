@@ -1,146 +1,135 @@
-
-
-//api/products/order/create
-//api/products/order/all
-//api/products/order//orders/:id
-//api/products/order/orders/cancel/:id
-//api/products/order//orders/cancel/:id
-//api/products/order//orders/update/:id
-
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
 
 export const createOrder = createAsyncThunk(
-  "order/createOrder",
+  'order/createOrder',
   async (orderData, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post("/api/order/create", orderData);
-      return data;
+      const { data } = await axios.post('/api/order/create', orderData);
+      return data.order;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || error.message || "Error"
-      );
+      return rejectWithValue(error?.response?.data?.message || 'Error');
     }
   }
 );
 
-export const getAllOrders = createAsyncThunk(
-  "order/getAllOrders",
+export const getUserOrders = createAsyncThunk(
+  'order/getUserOrders',
   async (_, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get("/api/order/all");
-      return data;
+      const { data } = await axios.get('/api/order/orders');
+      return data.orders;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || error.message || "Error"
-      );
+      return rejectWithValue(error?.response?.data?.message || 'Error');
+    }
+  }
+);
+
+export const getAdminOrders = createAsyncThunk(
+  'order/getAdminOrders',
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await axios.get('/api/order/admin/all');
+      return data.order;
+    } catch (error) {
+      return rejectWithValue(error?.response?.data?.message || 'Error');
     }
   }
 );
 
 export const getOrderById = createAsyncThunk(
-  "order/getOrderById",
+  'order/getOrderById',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.get(`/api/products/order/orders/${id}`);
-      return data;
+      const { data } = await axios.get(`/api/order/user/single/${id}`);
+      return data.order;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || error.message || "Error"
-      );
+      return rejectWithValue(error?.response?.data?.message || 'Error');
     }
   }
 );
-
 
 export const cancelOrder = createAsyncThunk(
-  "order/cancelOrder",
+  'order/cancelOrder',
   async (id, { rejectWithValue }) => {
     try {
-      const { data } = await axios.put(
-        `/api/products/order/orders/cancel/${id}`
-      );
-      return data;
+      const { data } = await axios.put(`/api/order/user/cancel/${id}`);
+      return data.updatedOrder;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || error.message || "Error"
-      );
+      return rejectWithValue(error?.response?.data?.message || 'Error');
     }
   }
 );
 
-
 export const updateOrder = createAsyncThunk(
-  "order/updateOrder",
+  'order/updateOrder',
   async ({ id, updateData }, { rejectWithValue }) => {
     try {
       const { data } = await axios.put(
-        `/api/products/order/orders/update/${id}`,
+        `/api/order/seller/update/${id}`,
         updateData
       );
-      return data;
+      return data.order;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.message || error.message || "Error"
-      );
+      return rejectWithValue(error?.response?.data?.message || 'Error');
     }
   }
 );
 
-
-
 const initialState = {
-  allOrders: [],
-  count:0,
+  userOrders: [],
+  adminOrders: [],
   orderDetails: null,
-  createdOrder: null,
   isLoading: false,
   error: null,
-  success: false,
 };
 
 const orderSlice = createSlice({
-  name: "orders",
+  name: 'orders',
   initialState,
-  reducers: {
-    resetSuccess(state) {
-      state.success = false;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
- 
       .addCase(createOrder.pending, (state) => {
         state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.isLoading = false;
         state.createdOrder = action.payload;
-        state.success = true;
+        localStorage.setItem('lastOrder', JSON.stringify(action.payload));
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
 
-
-      .addCase(getAllOrders.pending, (state) => {
+      .addCase(getUserOrders.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(getAllOrders.fulfilled, (state, action) => {
+      .addCase(getUserOrders.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.allOrders = action.payload.order
+        state.userOrders = action.payload;
       })
-      .addCase(getAllOrders.rejected, (state, action) => {
+      .addCase(getUserOrders.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
 
-      
+      .addCase(getAdminOrders.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getAdminOrders.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.adminOrders = action.payload;
+      })
+      .addCase(getAdminOrders.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
       .addCase(getOrderById.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -157,11 +146,10 @@ const orderSlice = createSlice({
       .addCase(cancelOrder.pending, (state) => {
         state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.success = true;
+        state.orderDetails = action.payload;
       })
       .addCase(cancelOrder.rejected, (state, action) => {
         state.isLoading = false;
@@ -171,11 +159,10 @@ const orderSlice = createSlice({
       .addCase(updateOrder.pending, (state) => {
         state.isLoading = true;
         state.error = null;
-        state.success = false;
       })
-      .addCase(updateOrder.fulfilled, (state) => {
+      .addCase(updateOrder.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.success = true;
+        state.orderDetails = action.payload;
       })
       .addCase(updateOrder.rejected, (state, action) => {
         state.isLoading = false;
@@ -184,5 +171,4 @@ const orderSlice = createSlice({
   },
 });
 
-export const { resetSuccess } = orderSlice.actions;
 export default orderSlice.reducer;
