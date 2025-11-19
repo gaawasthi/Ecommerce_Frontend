@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AdminLayout from '../../components/layouts/AdminLayout';
-import { logout } from '../../features/auth/authSlice';
+import { logoutApi } from '../../features/auth/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState(user || JSON.parse(localStorage.getItem('user')) || {});
-
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [form, setForm] = useState(
+    user || JSON.parse(localStorage.getItem('user')) || {}
+  );
+  const navigate = useNavigate();
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSave = () => {
     localStorage.setItem('user', JSON.stringify(form));
@@ -17,8 +21,8 @@ const Profile = () => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
-    window.location.href = '/login';
+    dispatch(logoutApi());
+    navigate('/login');
   };
 
   return (

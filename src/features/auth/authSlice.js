@@ -28,9 +28,9 @@ export const register = createAsyncThunk(
 
 export const resendOtp = createAsyncThunk(
   'auth/resendOtp',
-  async (userData, { rejectWithValue }) => {
+  async ({email}, { rejectWithValue }) => {
     try {
-      const res = await axios.post('/api/users/resendOtp', userData);
+      const res = await axios.post('/api/users/resendOtp', {email});
       return res.data;
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
@@ -70,19 +70,33 @@ export const login = createAsyncThunk(
   }
 );
 
-
 export const logoutApi = createAsyncThunk(
   'auth/logoutApi',
   async (_, { rejectWithValue }) => {
     try {
-      await axios.post('/api/users/logout');
+      await axios.post(
+        '/api/users/logout',
+        {},
+        { withCredentials: true }
+      );
+
+     
       localStorage.removeItem('user');
+
+    
+      document.cookie.split(";").forEach((cookie) => {
+        document.cookie =
+          cookie.trim().split("=")[0] +
+          "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+      });
+
       return true;
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
     }
   }
 );
+
 
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
@@ -112,6 +126,7 @@ export const changePassword = createAsyncThunk(
   'auth/changePassword',
   async (userData, { rejectWithValue }) => {
     try {
+      
       const res = await axios.post('/api/users/password/change', userData);
       return res.data;
     } catch (err) {
@@ -143,7 +158,8 @@ export const updateUser = createAsyncThunk(
 
 
       if (res.data) localStorage.setItem('user', JSON.stringify(res.data));
-
+       console.log(res);
+       
       return res.data;
     } catch (err) {
       return rejectWithValue(getErrorMessage(err));
@@ -155,14 +171,6 @@ export const updateUser = createAsyncThunk(
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-
-  reducers: {
-    logout: (state) => {
-      localStorage.removeItem('user');
-      state.user = null;
-      state.isError = false;
-    },
-  },
 
   extraReducers: (builder) => {
     builder
@@ -279,7 +287,7 @@ const authSlice = createSlice({
       })
       .addCase(userInfo.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(userInfo.rejected, (state) => {
         state.isLoading = false;
@@ -292,7 +300,7 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(updateUser.rejected, (state) => {
         state.isLoading = false;
@@ -301,5 +309,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+
 export default authSlice.reducer;

@@ -16,6 +16,7 @@ const SearchedProducts = () => {
     if (query) {
       dispatch(searched(query));
     }
+     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [query, dispatch]);
   console.log(searchedProducts);
 

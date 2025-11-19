@@ -16,7 +16,7 @@ const AllProducts = () => {
     maxPrice: ''
   });
 
-  const { products, totalPages } = useSelector((state) => state.product);
+  const { products, totalPages ,isLoading } = useSelector((state) => state.product);
 
   useEffect(() => {
     dispatch(getAllProducts(filters));
@@ -25,10 +25,27 @@ const AllProducts = () => {
 
   const handlePageChange = (newPage) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
-  };
+  };   
 
+ 
   return (
     <ProductLayout applyFilters={setFilters}>
+
+  {isLoading && (
+    <div className="h-40 flex justify-center items-center text-lg font-semibold">
+      Loading...
+    </div>
+  )}
+
+  {!isLoading && products.length === 0 && (
+    <div className="h-40 flex justify-center items-center text-xl font-bold text-gray-500">
+      No Products Found
+    </div>
+  )}
+
+
+  {!isLoading && products.length > 0 && (
+    <>
       <div className="mb-8 flex flex-wrap gap-4 justify-center items-center">
         {products.map((product) => (
           <div key={product._id} className="w-[215px]">
@@ -43,7 +60,7 @@ const AllProducts = () => {
         ))}
       </div>
 
-      {/* Pagination */}
+
       <div className="flex gap-6 justify-center items-center mt-10">
         <button
           disabled={filters.page === 1}
@@ -65,7 +82,10 @@ const AllProducts = () => {
           Next →
         </button>
       </div>
-    </ProductLayout>
+    </>
+  )}
+</ProductLayout>
+
   );
 };
 

@@ -11,31 +11,40 @@ import {
   Package,
   User,
   ChevronDown,
-  SearchCheckIcon,
   SearchIcon,
 } from 'lucide-react';
+
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCart } from '../features/cart/cartSlice';
+import { logoutApi } from '../features/auth/authSlice';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
-  const [value, setValue] = useState("");
+  const dispatch = useDispatch();
+
+  const { user } = useSelector((state) => state.auth);
 
   const { cart } = useSelector((state) => state.cart);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getCart());
-  }, [dispatch]);
 
-  const handleLogout = () => {};
+  const [value, setValue] = useState('');
+
+  useEffect(() => {
+    if (user) dispatch(getCart());
+  }, [dispatch, user]);
+
+  const handleLogout = async () => {
+    await dispatch(logoutApi());
+    setShowProfileDropdown(false);
+    navigate('/');
+  };
+
   return (
     <nav className="w-full bg-white shadow-sm border-b border-gray-100 fixed top-0 left-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        {/* Left */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setOpen(!open)}
@@ -59,7 +68,7 @@ export default function Navbar() {
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+              `flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
@@ -73,7 +82,7 @@ export default function Navbar() {
           <NavLink
             to="/products"
             className={({ isActive }) =>
-              `flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
+              `flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-50 text-blue-600'
                   : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
@@ -85,47 +94,39 @@ export default function Navbar() {
           </NavLink>
         </div>
 
-        {/* Desktop Search */}
+        <form
+          className="flex flex-row"
+          onSubmit={(e) => {
+            e.preventDefault();
+            navigate(`/search?query=${value}`);
+          }}
+        >
+          <SearchIcon className="mt-2 mr-5" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg 
+              focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+          />
+        </form>
 
-        {/* <input
-  type="text"
-  placeholder="Search products..."
-  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg 
-             focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
-  onKeyDown={(e) => {
-    const value = e.target.value.trim();
-    navigate(`/search?query=${value}`);
-  }}
-/> */}
-<form className='flex flex-row'
-  onSubmit={(e) => {
-    e.preventDefault();
-    navigate(`/search?query=${value}`);
-  }}
-> <SearchIcon className='mt-2 mr-5'  />
-  <input
-    type="text"
-    placeholder="Search products..."
-    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg 
-        focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
-    value={value}
-    onChange={(e) => setValue(e.target.value)}
-  />
-
-  <button type="submit"></button>
-</form>
-        {/* Right Desktop */}
         <div className="hidden md:flex items-center gap-4">
           <NavLink
             to="/cart"
             className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <ShoppingCart size={22} className="text-gray-700" />
-            {cart?.items?.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] flex items-center justify-center rounded-full font-medium">
-                {cart?.items?.length}
-              </span>
-            )}
+            {cart?.items?.length > 0 &&
+              (user ? (
+                <span
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[18px] h-[18px] 
+                flex items-center justify-center rounded-full font-medium"
+                >
+                  {cart?.items?.length}
+                </span>
+              ) : null)}
           </NavLink>
 
           {user ? (
@@ -134,14 +135,17 @@ export default function Navbar() {
               onMouseEnter={() => setShowProfileDropdown(true)}
               onMouseLeave={() => setShowProfileDropdown(false)}
             >
-              {/* Profile Trigger */}
-              <button className="flex items-center gap-2 p-2 pr-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {user.firstName[0]}
+              <button className="flex items-center gap-2 p-2 pr-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all shadow-sm">
+                {/* Profile Icon */}
+                <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User size={20} className="text-gray-700" />
                 </div>
-                <span className="font-medium text-gray-700 text-sm">
-                  {user.firstName}
+
+                {/* Name */}
+                <span className="font-medium text-gray-800 text-sm">
+                  {user?.firstName}
                 </span>
+
                 <ChevronDown
                   size={16}
                   className={`text-gray-600 transition-transform ${
@@ -150,12 +154,12 @@ export default function Navbar() {
                 />
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown */}
               {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 transition-all">
                   <NavLink
                     to="/userprofile"
-                    className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
                   >
                     <User size={18} />
                     <span className="font-medium">Profile</span>
@@ -163,7 +167,7 @@ export default function Navbar() {
 
                   <NavLink
                     to="/orders"
-                    className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
                   >
                     <Package size={18} />
                     <span className="font-medium">Orders</span>
@@ -173,7 +177,7 @@ export default function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition"
                   >
                     <LogOut size={18} />
                     <span className="font-medium">Logout</span>
@@ -182,39 +186,40 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors font-medium text-sm">
+            <button
+              onClick={() => navigate('/login')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 font-medium shadow"
+            >
               <LogIn size={16} />
               Login
             </button>
           )}
         </div>
 
-        {/* Mobile Cart */}
         <div className="flex md:hidden items-center gap-2">
           <NavLink
             to="/cart"
-            className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="relative p-2 hover:bg-gray-100 rounded-lg"
           >
             <ShoppingCart size={20} />
-            {cart?.items.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-[16px] h-[16px] flex items-center justify-center rounded-full font-medium"></span>
+            {cart?.items?.length > 0 && (
+              <span
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-[16px] h-[16px] 
+                flex items-center justify-center rounded-full font-medium"
+              >
+                {cart?.items?.length}
+              </span>
             )}
           </NavLink>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-gray-200 px-4 py-3 space-y-3">
-          {/* Mobile Nav Links */}
           <div className="space-y-1">
             <NavLink
               to="/"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50'
-                }`
-              }
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50"
             >
               <Home size={18} />
               Home
@@ -222,11 +227,7 @@ export default function Navbar() {
 
             <NavLink
               to="/products"
-              className={({ isActive }) =>
-                `w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors font-medium ${
-                  isActive ? 'bg-blue-50 text-blue-600' : 'hover:bg-blue-50'
-                }`
-              }
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50"
             >
               <Package size={18} />
               Products
@@ -234,22 +235,17 @@ export default function Navbar() {
 
             <NavLink
               to="/cart"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50"
             >
               <ShoppingCart size={18} />
-              <span>Cart</span>
-              {cart?.items.length > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                  {cart?.items.length}
-                </span>
-              )}
+              Cart
             </NavLink>
 
             {user && (
               <>
                 <NavLink
-                  to="/profile"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                  to="/userprofile"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50"
                 >
                   <User size={18} />
                   Profile
@@ -257,7 +253,7 @@ export default function Navbar() {
 
                 <NavLink
                   to="/orders"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-50"
                 >
                   <Package size={18} />
                   Orders
@@ -266,15 +262,21 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Auth */}
+          {/* Bottom Logout/Login */}
           <div className="pt-3 border-t border-gray-200">
             {user ? (
-              <button className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium text-sm">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50"
+              >
                 <LogOut size={16} />
                 Logout
               </button>
             ) : (
-              <button className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
                 <LogIn size={16} />
                 Login
               </button>

@@ -39,10 +39,10 @@ const cartHandler = (e) => {
       <div className="flex justify-between items-center mt-auto">
         <p className="text-lg font-bold text-gray-900">₹{price}</p>
         <button
-          onClick={cartHandler}
+        
           className="px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 active:scale-95 transition-all duration-200 font-medium"
         >
-          Add to Cart
+    view
         </button>
       </div>
     </div>

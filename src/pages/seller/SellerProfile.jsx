@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../features/auth/authSlice';
+import { logoutApi } from '../../features/auth/authSlice';
 import SellerLayout from '../../components/layouts/SellerLayout';
 
 const SellerProfile = () => {
@@ -17,7 +17,7 @@ const SellerProfile = () => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+      dispatch(logoutApi());
     window.location.href = '/login';
   };
 

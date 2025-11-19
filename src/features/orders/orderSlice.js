@@ -80,6 +80,7 @@ const initialState = {
   userOrders: [],
   adminOrders: [],
   orderDetails: null,
+  createdOrder:JSON.parse(localStorage.getItem('lastOrder')) || null,
   isLoading: false,
   error: null,
 };

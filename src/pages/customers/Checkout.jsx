@@ -3,6 +3,8 @@ import { useDispatch } from 'react-redux';
 import { createOrder } from '../../features/orders/orderSlice';
 import { emptyCart } from '../../features/cart/cartSlice';
 import { useNavigate } from 'react-router-dom';
+import toast from 'not-a-toast';
+import 'not-a-toast/style.css';
 
 const Checkout = () => {
   const dispatch = useDispatch();
@@ -124,7 +126,15 @@ const Checkout = () => {
     localStorage.removeItem('cart')
     dispatch(emptyCart())
     navigate("/order/summary")
-    alert('Order placed successfully');
+      
+   toast({
+    message: " Order Placed Successfully",
+    showIcon: true,
+    iconAnimation: "default",
+    iconTimingFunction: "ease",
+    iconBorderRadius: "50%",
+    iconType: "success",
+});
   };
 
   return (

@@ -2,66 +2,116 @@ import React, { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { register, verify } from '../features/auth/authSlice';
+import { register, resendOtp, verify } from '../features/auth/authSlice';
+
+import toast from 'not-a-toast';
+import 'not-a-toast/style.css';
+
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 
 export default function RegistrationForm() {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-  });
-
   const [otp, setOtp] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [email , setEmail] = useState("")
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const validationSchema = Yup.object({
+    firstName: Yup.string()
+      .min(3, 'First name must be at least 3 characters')
+      .required('First name is required'),
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    const result = await dispatch(register(form));
+    lastName: Yup.string()
+      .min(3, 'Last name must be at least 3 characters')
+      .required('Last name is required'),
 
-    if (result.meta.requestStatus === 'fulfilled') {
-      setStep(2);
-    } else {
-      alert(result.payload?.message || 'Registration failed');
-    }
-  };
+    email: Yup.string()
+      .email('Invalid email format')
+      .required('Email is required'),
+
+    password: Yup.string()
+      .min(8, 'Password must be at least 8 characters')
+      .required('Password is required'),
+  });
+
+  const formik = useFormik({
+    initialValues: { firstName: '', lastName: '', email: '', password: '' },
+    validationSchema,
+    onSubmit: async (values) => {
+      setLoading(true);
+      setEmail(values.email)
+      const result = await dispatch(register(values));
+      setLoading(false);
+
+      if (result.meta.requestStatus === 'fulfilled') {
+        setStep(2);
+        toast({
+          message: 'Enter OTP to verify',
+          duration: 2000,
+          autoClose: true,
+        });
+      } else {
+        toast.error(result.payload?.message || 'Registration failed');
+      }
+    },
+  });
 
   const handleVerify = async () => {
-    if (otp.length < 4) {
-      alert('Enter a valid OTP');
+    if (otp.trim().length < 4) {
+      toast({
+        message: 'Enter a valid OTP',
+        type: 'error',
+        duration: 2000,
+        autoClose: true,
+      });
       return;
     }
 
-    const result = await dispatch(
-      verify({
-        email: form.email,
-        otp,
-      })
-    );
+    setVerifyLoading(true);
+    const result = await dispatch(verify({ email: formik.values.email, otp }));
+    setVerifyLoading(false);
 
     if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/home');
+      toast({
+        message: 'Account verified!',
+        type: 'success',
+        duration: 2000,
+        autoClose: true,
+      });
+      navigate('/');
     } else {
-      alert(result.payload?.message || 'Invalid OTP');
+      toast({
+        message:  'Invalid OTP',
+        type: 'error',
+        duration: 2000,
+        autoClose: true,
+      });
     }
+  };
+  const handleResend = () => {
+    console.log(email);
+    
+    dispatch(resendOtp({email}));
+    toast({
+      message: 'Otp sended again ',
+      type: 'success',
+      duration: 2000,
+      autoClose: true,
+    });
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-xl">
-        
-        {/* Step Indicators */}
         <div className="flex items-center justify-center mb-10 gap-4">
           {[1, 2].map((num, idx) => (
             <React.Fragment key={num}>
               <div
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-white transition-all ${
+                className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-white ${
                   step >= num ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               >
@@ -78,63 +128,91 @@ export default function RegistrationForm() {
           ))}
         </div>
 
-        {/* STEP 1: REGISTER */}
         {step === 1 && (
-          <form onSubmit={handleRegister} className="space-y-6">
+          <form onSubmit={formik.handleSubmit} className="space-y-6">
             <h2 className="text-3xl font-bold text-center text-gray-800">
               Create Your Account
             </h2>
 
             <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First Name"
-                value={form.firstName}
-                onChange={handleChange}
-                required
-                className="border px-4 py-3 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last Name"
-                value={form.lastName}
-                onChange={handleChange}
-                required
-                className="border px-4 py-3 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  className="border px-4 py-3 rounded-xl shadow-sm w-full"
+                  {...formik.getFieldProps('firstName')}
+                />
+                {formik.touched.firstName && formik.errors.firstName && (
+                  <p className="text-red-500 text-sm">
+                    {formik.errors.firstName}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  className="border px-4 py-3 rounded-xl shadow-sm w-full"
+                  {...formik.getFieldProps('lastName')}
+                />
+                {formik.touched.lastName && formik.errors.lastName && (
+                  <p className="text-red-500 text-sm">
+                    {formik.errors.lastName}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="border px-4 py-3 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  className="border px-4 py-3 rounded-xl shadow-sm w-full"
+                  {...formik.getFieldProps('email')}
+                />
+                {formik.touched.email && formik.errors.email && (
+                  <p className="text-red-500 text-sm">{formik.errors.email}</p>
+                )}
+              </div>
 
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={6}
-                className="border px-4 py-3 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-              />
+              <div>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  className="border px-4 py-3 rounded-xl shadow-sm w-full"
+                  {...formik.getFieldProps('password')}
+                />
+                {formik.touched.password && formik.errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {formik.errors.password}
+                  </p>
+                )}
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2 hover:bg-blue-700 transition-all shadow-md"
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2"
+              disabled={loading}
             >
-              Continue <ArrowRight size={20} />
+              {loading ? (
+                <span className="loader w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              ) : (
+                <>
+                  Continue <ArrowRight size={20} />
+                </>
+              )}
             </button>
+
+            <style>{`
+              .loader { border-top-color: transparent; }
+            `}</style>
 
             <p className="text-center text-gray-700">
               Already have an account?{' '}
@@ -149,13 +227,11 @@ export default function RegistrationForm() {
           </form>
         )}
 
-        {/* STEP 2: OTP VERIFY */}
         {step === 2 && (
           <div className="text-center space-y-6">
             <h2 className="text-3xl font-bold text-gray-800">Verify OTP</h2>
-
             <p className="text-gray-600">
-              Enter the verification code sent to <strong>{form.email}</strong>
+              Enter the OTP sent to <strong>{formik.values.email}</strong>
             </p>
 
             <input
@@ -165,23 +241,36 @@ export default function RegistrationForm() {
               onChange={(e) => {
                 if (/^\d*$/.test(e.target.value)) setOtp(e.target.value);
               }}
+              className="w-full text-center text-xl font-semibold border-2 rounded-xl py-3"
               placeholder="Enter OTP"
-              className="w-full text-center text-xl font-semibold border-2 border-gray-300 rounded-xl py-3 focus:ring-2 focus:ring-blue-500 outline-none"
             />
 
             <button
               onClick={handleVerify}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-md"
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
+              disabled={verifyLoading}
             >
-              Verify & Continue
+              {verifyLoading ? (
+                <span className="loader w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              ) : (
+                'Verify & Continue'
+              )}
             </button>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setStep(1)}
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Back
+              </button>
 
-            <button
-              onClick={() => setStep(1)}
-              className="text-blue-600 font-medium hover:underline"
-            >
-              Back
-            </button>
+              <button
+                onClick={handleResend}
+                className="text-red-600 font-medium hover:underline"
+              >
+                Resend OTP
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -25,6 +25,7 @@ import OrderSummary from './pages/customers/OrderSummary';
 import OrderList from './pages/customers/OrderList';
 import CustomerProfile from './pages/customers/Profile';
 import SearchedProducts from './pages/customers/SearchedProducts';
+import ForgotPassword from './pages/ForgotPassword';
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<RegistrationForm />} />
+          <Route path="/forget" element={<ForgotPassword/>} />
 
           {/* admin routes */}
 
